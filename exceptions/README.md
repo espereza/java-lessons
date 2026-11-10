@@ -94,3 +94,124 @@ checked exceptions. In general, this is not recommended.
 
 Unchecked Exceptions controversy talks about when it is appropriate to use
 unchecked exceptions.
+
+## Catching and Handling Exceptions
+
+To write an exception handler, you might use its three components: 
+the `try`, `catch`, and `finally` blocks.
+
+### The `try` Block
+The first step in constructing an exception handler is to enclose the code
+that might throw an exception within a `try` block. In general, a `try`
+block looks like the following:
+
+```
+try {
+   code segment with one or more lines of code that could throw an exception
+}
+catch and finally blocks ...
+```
+
+You can put each line of code that might throw an exception within its own
+try block and provide separate exception handlers for each. Or, you can put
+all the code within a single try block and associate multiple handlers with
+it.
+
+If an exception occurs within the `try` block, that exception is handled
+by an exception handler associated with it. To associate an exception
+handler with a `try` block, you must put a `catch` block after it.
+
+### The `catch` Blocks
+You associate exception handlers with a `try` block by providing one or
+more `catch` blocks directly after the `try` block. No code can be
+between the end of the `try` block and the beginning of the first `catch`
+block.
+
+```
+try {
+   code that could throw one or more exceptions
+} catch (ExceptionType name) {
+   handle exception of given type
+} catch (ExceptionType name) {
+   handle exception of given type
+}
+```
+
+Each `catch` block is an exception handler that handles the type of 
+exception indicated by its argument. The argument type, `ExceptionType`,
+declares the type of exception that the handler can handle and must be
+the name of a class that inherits from the `Throwable` class.
+
+The `catch` block contains code that is executed if and when the
+exception handler is invoked. The runtime system invokes the
+exception handler when the handler is the first one in the call stack
+whose `ExceptionType` matches the type of the exception thrown. 
+The system considers it a match if the thrown object can legally be
+assigned to the exception handler's argument.
+
+Exception handlers can do more than just print error messages or halt
+the program. They can do error recovery, prompt the user to make a
+decision, or propagate the error up to a higher-level handler using
+*chained exceptions*.
+
+#### Multi-Catching Exceptions
+You can catch more than one type of exception with one exception handler,
+with the multi-catch pattern.
+
+In Java SE 7 and later, a single `catch` block can handle more than one
+type of exception. This feature can reduce code duplication and lessen
+the temptation to catch an overly broad exception.
+
+In the `catch` clause, specify the types of exceptions that block can
+handle, and separate each exception type with a vertical bar `|`:
+
+```
+catch (IOException | SQLException ex) {
+   handle both exceptions
+}
+```
+
+Note: If a catch block handles more than one exception type, then the
+`catch` parameter is implicitly `final`. Note also that the compiler
+puts constraints on the exceptions you catch with this syntax, the
+exceptions cannot extend one another, in any order.
+
+### The `finally` Block
+The `finally` block always executes when the `try` block exits.
+This ensures that the `finally` block is executed even if an unexpected
+exception occurs. But `finally` is useful for more than just exception
+handling — it allows the programmer to avoid having cleanup code
+accidentally bypassed by a `return`, `continue`, or `break`.
+Putting cleanup code in a `finally` block is always a good practice,
+even when no exceptions are anticipated.
+
+Note: If the JVM exits while the `try` or `catch`code is being
+executed, then the `finally` block may not execute.
+
+Remember, the runtime system always executes the statements
+within the `finally` block regardless of what happens within
+the `try` block.
+
+#### Important 
+- **The `finally` block is a very tool for preventing
+resource leaks**. When closing a file or otherwise recovering
+resources, place the code in a `finally` block to ensure is
+always recovered.
+- Consider using the *try-with-resources* statement in these
+situations, which automatically releases system resources
+when no longer needed.
+
+#### Exceptions Thrown form a `finally` Block
+You may come across the following situation.
+
+1. You execute a `try` block, and a exception is thrown,
+interrupting the execution of this block.
+2. You then execute your `finally` block. But then, another
+exception is thrown within your `finally` block.
+
+This can happen if the `finally` block tries to close a resource,
+and an exception is thrown by the call to `close()`.
+
+In such a case, the exception thrown in your `finally` block is
+the one that is propagated to the calling code. The exception
+thrown in the `try` block is discarded and forgotten.
